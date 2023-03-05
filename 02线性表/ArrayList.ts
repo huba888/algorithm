@@ -1,36 +1,14 @@
 import Assert from "../shared/Assert";
 import isObject from "../shared/isObject";
+import AbstractList from "./AbstractList";
 type Equals<T> = { equals: (el: T) => boolean } | number | string | boolean;
-class ArrayList<E extends Equals<E>> {
+class ArrayList<E extends Equals<E>> extends AbstractList<E> {
   private static readonly DEFAULT_CAPACITY = 10;
-  private static readonly ELEMENT_NOT_FOUND = -1;
-  private size: number = 0;
   private elements: E[];
   constructor(capacity: number = ArrayList.DEFAULT_CAPACITY) {
+    super();
     capacity = capacity < 10 ? ArrayList.DEFAULT_CAPACITY : capacity;
     this.elements = new Array<E>(capacity);
-  }
-  private outOfBounds(index: number) {
-    throw new RangeError(`index :${index} , Size : ${this.size}`);
-  }
-  private rangeCheck(index: number) {
-    if (index < 0 || index >= this.size) {
-      this.outOfBounds(index);
-    }
-  }
-  private rangeCheckForAdd(index: number) {
-    if (index < 0 || index > this.size) {
-      this.outOfBounds(index);
-    }
-  }
-  length(): number {
-    return this.size;
-  }
-  isEmpty(): boolean {
-    return this.size === 0;
-  }
-  contains(element: E): boolean {
-    return this.indexOf(element) !== ArrayList.ELEMENT_NOT_FOUND;
   }
   get(index: number) {
     this.rangeCheck(index);
@@ -78,8 +56,21 @@ class ArrayList<E extends Equals<E>> {
     }
     // 把最后一个清空
     this.elements[--this.size] = null!;
-    console.log("end");
+    this.trim();
     return old;
+  }
+  // 缩容的操作
+  trim() {
+    let capacity = this.elements.length;
+    // 元素数量操作容量的一般 或者 你的容量本来就很少了
+    if (this.size >= capacity >> 1 || ArrayList.DEFAULT_CAPACITY >= capacity)
+      return;
+    let newCapacity = this.elements.length >> 1;
+    let newArray: E[] = new Array<E>(newCapacity);
+    for (let i = 0; i < this.size; i++) {
+      newArray[i] = this.elements[i];
+    }
+    this.elements = newArray;
   }
   indexOf(element: E): number {
     for (let i = 0; i < this.elements.length; i++) {
@@ -96,7 +87,7 @@ class ArrayList<E extends Equals<E>> {
         return i;
       }
     }
-    return ArrayList.ELEMENT_NOT_FOUND;
+    return this.ELEMENT_NOT_FOUND;
   }
   clear() {
     for (let i = 0; i < this.elements.length; i++) {
