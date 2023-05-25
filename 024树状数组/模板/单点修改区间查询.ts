@@ -10,7 +10,7 @@ function add(x: number, val: number) {
     tree[i] += val;
   }
 }
-// 查询从1,到x 的和
+// 查询前x项的和
 function query(x: number) {
   let res = 0;
   for (let i = x; i > 0; i -= lowbit(i)) {
