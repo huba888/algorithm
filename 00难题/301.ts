@@ -1,37 +1,41 @@
-function removeInvalidParentheses(s: string): string[] {
-  // 写一个valid函数，判断是否合理
-  function isValid(s: string): boolean {
-    let l = 0;
-    let r = 0;
-    for (let i = 0; i < s.length; i++) {
-      if (s[i] == "(") {
-        l++;
-      } else if (s[i] == ")") {
-        r++;
-      }
-      if (l < r) return false;
-    }
-    return l == r;
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var reversePairs = function (nums: number[]) {
+  // 离散化
+  let map = new Map<number, number>(
+    [...new Set([...nums, ...nums.map(v => 2 * v)])]
+      .sort((a, b) => a - b)
+      .map((v, k) => [v, k + 1])
+  );
+  let n = nums.length * 2;
+  let tree = new Array(2 * n).fill(0);
+  function lowbit(x: number) {
+    return x & -x;
   }
-  let set = new Set<string>([s]);
-  let res = [];
-  while (1) {
-    for (const s of set) {
-      if (isValid(s)) {
-        res.push(s);
-      }
+  function add(x: number, val: number) {
+    for (let i = x; i <= n; i += lowbit(i)) {
+      tree[i] += val;
     }
-    if (res.length > 0) return res;
-    // 如果没有返回,那么我们继续删除括号
-    let temp = new Set<string>();
-    for (const s of set) {
-      for (let i = 0; i < s.length; i++) {
-        // 把 i 位置的元素删除了
-        temp.add(s.slice(0, i) + s.slice(i + 1));
-      }
-      拦截原因:订单的结算方式要求必须“已付款”，订单付款状态：未付款}
-    set = temp;
   }
-  return [""];
-}
-console.log(removeInvalidParentheses("()())()"));
+  // 查询原数组前n项的和
+  function query(x: number) {
+    let ans = 0;
+    for (let i = x; i > 0; i -= lowbit(i)) {
+      ans += tree[i];
+    }
+    return ans;
+  }
+  let ans = 0;
+  for (const num of nums) {
+    // 查询有多少小于 num * 2
+    let rank1 = map.get(num * 2)!;
+    let temp = query(n) - query(rank1);
+    ans += temp;
+    add(map.get(num)!, 1);
+  }
+  return ans;
+};
+let res = reversePairs([1, 3, 2, 3, 1]);
+console.log(res);
